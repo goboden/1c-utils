@@ -1,5 +1,6 @@
 .idea/
 *.sql
+*.str
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
