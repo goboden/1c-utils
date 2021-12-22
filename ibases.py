@@ -15,31 +15,34 @@ class IBFolder:
             self.parent = None
 
     def __repr__(self):
-        return self.name
+        return self.name or '/'
 
     def __hash__(self):
-        return 1
+        return hash(self.name)
+
+    def __eq__(self, other):
+        return isinstance(other, IBFolder) and self.name == other.name
 
 
 class IBFolderTree:
     def __init__(self):
         self._folders = []
+        self._tree = {}
 
     def __repr__(self):
-        tree_repr = ''
-        for folder in self._folders:
-            tree_repr += str(folder) + '\n'
+        tree_repr = '\n'.join([str(folder) for folder in self._folders])
         return tree_repr
 
     def find(self, folder: IBFolder):
         pass
 
     def add(self, folder: IBFolder):
-        try:
-            index = self._folders.index(folder)
-            print(f'{str(folder)} = {index}')
-        except ValueError:
+        if folder not in self._folders:
             self._folders.append(folder)
+            if folder.parent:
+                pass
+            else:
+                self._tree[folder] = {}
 
 
 class IBase:
@@ -100,9 +103,9 @@ class IBases:
 
 
 if __name__ == '__main__':
-    # ibases = IBases('C:/Users/terentev.d/AppData/Roaming/1C/1CEStart/ibases.v8i')
-    ibases = IBases()
-    print(ibases.path)
+    ibases = IBases('./ibases.v8i')
+    # ibases = IBases()
+    # print(ibases.path)
 
     # print(ibases._path)
     # pprint(ibases.list)
@@ -117,4 +120,4 @@ if __name__ == '__main__':
     # ibase = ibases['local_terentev_upp_helix']
     # print(ibase.folder.parent, ibase)
 
-    # print(ibases.folders)
+    print(ibases.folders)
