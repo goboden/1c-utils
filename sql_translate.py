@@ -34,8 +34,8 @@ def find_tables(sql: str) -> Dict:
     return tables
 
 
-def add_fields(table_name: str, tables: Dict, sql: str) -> Dict:
-    result = re.findall(r'(' + table_name + r'\.)(.[^\s,\)]+)', sql)
+def add_fields(table_name: str, tables: Dict, sql: str):
+    result = re.findall(r'(' + table_name + r'\.)(.[^\s,)]+)', sql)
     fields = {field: '' for _, field in result}
     tables[table_name]['fields'] = fields
 
