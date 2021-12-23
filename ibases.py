@@ -2,17 +2,16 @@ import os
 from pathlib import WindowsPath
 import re
 from pprint import pprint
-from typing import Dict
+from typing import Dict, List, Union, Optional, Generator
 
 
 class IBFolder:
     def __init__(self, name: str):
         path = name.split('/')
         self.name = path[-1]
+        self.parent = None
         if len(path) > 2:
             self.parent = IBFolder(path[-2])
-        else:
-            self.parent = None
 
     def __repr__(self):
         return self.name or '/'
@@ -57,8 +56,14 @@ class IBase:
         return self.name
 
 
+class IBaseList:
+    pass
+
+
 class IBases:
-    def _get_from_file(self):
+    DEFAULT_PATH = WindowsPath(os.environ['USERPROFILE']).joinpath('AppData/Roaming/1C/1CEStart/ibases.v8i')
+
+    def _read_file(self):
         with open(self._path, 'r', encoding='utf-8-sig') as f:
             sections = re.findall(r'\[[^\[]*', f.read())
             for section in sections:
@@ -66,27 +71,27 @@ class IBases:
                 result = re.findall(r'(\w*)=(.*)', data)
                 ib = IBase(name, {key: value for key, value in result})
                 self._info[name] = ib
+                self.list.append(ib)
                 self.folders.add(ib.folder)
 
     def __init__(self, path=None):
         super(IBases, self).__init__()
 
-        if path is None:
-            self._path = WindowsPath(os.environ['USERPROFILE']).joinpath('AppData/Roaming/1C/1CEStart/ibases.v8i')
-        else:
-            self._path = WindowsPath(path)
+        self._path = WindowsPath(path) if path else IBases.DEFAULT_PATH
         if not self._path.exists():
             raise FileNotFoundError(f'ibases path: {self._path}')
 
+        self.list = []
         self.folders = IBFolderTree()
         self._info = {}
-        self._get_from_file()
+        self._read_file()
 
-    def __getitem__(self, item) -> [IBase, IBFolder, None]:
+    def __getitem__(self, item) -> Optional[IBase]:
         if item in self._info:
             return self._info[item]
+        return None
 
-    def __iter__(self) -> [IBase, IBFolder]:
+    def __iter__(self) -> Generator:
         for ibase_name in self._info:
             yield self._info[ibase_name]
 
@@ -97,19 +102,14 @@ class IBases:
     def path(self):
         return self._path
 
-    @property
-    def list(self):
-        return sorted([key for key in self._info if not self._info[key].is_folder])
-
 
 if __name__ == '__main__':
-    ibases = IBases('./ibases.v8i')
-    # ibases = IBases()
+    # ibases = IBases('./ibases.v8i')
+    ibases = IBases()
     # print(ibases.path)
 
-    # print(ibases._path)
     # pprint(ibases.list)
-    # pprint(ibases['УПП (вход по паролю)']._all)
+    pprint(ibases['УПП (вход по паролю)'])
     # pprint(ibases['СЛУЖЕБНЫЕ'])
 
     # pprint(ibases.folders)
