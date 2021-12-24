@@ -30,6 +30,12 @@ class IBFolder:
             parent = parent.parent
         return parents
 
+    @property
+    def all_children(self) -> List[int]:
+        all_children: List[IBFolder] = []
+
+        return all_children
+
     def add_child(self, child):
         if child not in self.children:
             self.children.append(child)
@@ -37,7 +43,7 @@ class IBFolder:
 
 class IBFolderTree:
     def __init__(self):
-        self._folders = []
+        self._folders: List[IBFolder] = []
 
     def __repr__(self):
         tree_repr = '\n'.join([str(folder) for folder in self._folders])
@@ -46,8 +52,11 @@ class IBFolderTree:
     def __getitem__(self, item) -> IBFolder:
         return self._folders[item]
 
-    def find(self, folder: IBFolder):
-        pass
+    def by_name(self, name: str) -> Optional[IBFolder]:
+        for folder in self._folders:
+            if folder.name == name:
+                return folder
+        return None
 
     def add(self, folder: IBFolder):
         if folder not in self._folders:
@@ -81,7 +90,8 @@ class IBases:
                 result = re.findall(r'(\w*)=(.*)', data)
                 ib = IBase(name, {key: value for key, value in result})
                 self._info[name] = ib
-                self.list.append(ib)
+                if not ib.is_folder:
+                    self._items.append(ib)
                 self.folders.add(ib.folder)
 
     def __init__(self, path=None):
@@ -89,7 +99,7 @@ class IBases:
         if not self._path.exists():
             raise FileNotFoundError(f'ibases path: {self._path}')
 
-        self.list = []
+        self._items = []
         self.folders = IBFolderTree()
         self._info = {}
         self._read_file()
@@ -109,6 +119,10 @@ class IBases:
     @property
     def path(self):
         return self._path
+
+    def in_folder(self, folder: Optional[IBFolder], recursive=False) -> List[IBase]:
+        folders = folder.all_children if recursive else [folder]
+        return [ibase for ibase in self._items if ibase.folder in folders]
 
 
 if __name__ == '__main__':
@@ -130,4 +144,9 @@ if __name__ == '__main__':
 
     # print(ibases.folders)
 
-    print([parent for parent in ibases.folders[7].parents])
+    # print([parent for parent in ibases.folders[7].parents])
+
+    test_folder = ibases.folders.by_name('')
+    if test_folder:
+        for ib in ibases.in_folder(test_folder, recursive=True):
+            print(ib)
