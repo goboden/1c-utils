@@ -1,16 +1,36 @@
-package main
+package old
 
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
-func readFile(filename string) {
+func readFile(filename string) map[string]map[string]string {
 	data, err := os.ReadFile(filename)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(data))
+	lines := strings.Split(strings.TrimSuffix(string(data), "\n"), "\n")
+	readIBases(lines)
+	return nil
+}
+
+func readIBases(lines []string) {
+	var section string
+	ibases := make(map[string]string)
+	for _, line := range lines {
+		fmt.Println(line)
+		if string(line[0]) == "[" {
+			section = string(line[1:(len(line) - 2)])
+			continue
+		}
+		if strings.Contains(line, "ID=") {
+			fmt.Println(line)
+		}
+		ibases[section] = "1"
+	}
+	// fmt.Println(ibases)
 }
 
 func openFile(filename string) {
@@ -35,10 +55,11 @@ func readCommand() string {
 func listIBases() {
 	fmt.Println("IBases list:")
 	filename := "..\\ibases.v8i"
-	readFile(filename)
+	ibases := readFile(filename)
+	fmt.Println(ibases)
 }
 
-func main() {
+func main1() {
 	// readFile("..\\ibases.v8i")
 	// openFile("..\\ibases.v8i")
 	command := readCommand()
