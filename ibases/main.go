@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strings"
 )
 
 func main() {
@@ -15,17 +16,11 @@ func main() {
 }
 
 func splitStrings(d []byte) []string {
-	ls := make([]string, 0, uint(len(d)/20))
-	ln := make([]byte, 0, 50)
-	for _, ch := range d {
-		if string(ch) == "\n" {
-			ls = append(ls, string(ln))
-			ln = ln[:0]
-			continue
-		}
-		ln = append(ln, ch)
+	s := strings.Split(strings.Trim(string(d), "\r\n"), "\n")
+	for i, l := range s {
+		s[i] = strings.Trim(l, "\r")
 	}
-	return ls
+	return s
 }
 
 func readFile(name string) (str []string, err error) {
