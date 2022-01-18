@@ -9,41 +9,46 @@ type IBases struct {
 	folders []Folder
 }
 
+func (ibd *IBases) appendData(name string, data map[string]string) {
+	if _, ok := data["Connect"]; ok {
+		ibase := new(IBase)
+		ibase.fill(name, data)
+		ibase.connect = data["Connect"]
+		ibd.ibases = append(ibd.ibases, *ibase)
+	} else {
+		folder := new(Folder)
+		folder.fill(name, data)
+		ibd.folders = append(ibd.folders, *folder)
+	}
+}
+
+type IBItem struct {
+	name, id     string
+	external     bool
+	folder, path string
+}
+
 type IBase struct {
-	name        string
-	id, connect string
-	external    bool
-	folder      uint
+	IBItem
+	connect string
 }
 
 type Folder struct {
-	name     string
-	id       string
-	external bool
-	folder   uint
+	IBItem
+}
+
+func (itm *IBItem) fill(name string, data map[string]string) {
+	itm.name = name
+	itm.id = data["ID"]
+	itm.external = data["External"] != "0"
+	itm.path = data["Folder"]
 }
 
 func readIBases(data []string) IBases {
 	ibases := readData(data)
-	printIBases(ibases)
+	// printIBases(ibases)
+	printFolders(ibases, "/", 0)
 	return *&ibases
-}
-
-func (ibd *IBases) appendData(name string, data map[string]string) {
-	if _, ok := data["Connect"]; ok {
-		ibase := new(IBase)
-		ibase.name = name
-		ibase.id = data["ID"]
-		ibase.external = data["External"] != "0"
-		ibd.ibases = append(ibd.ibases, *ibase)
-		// fmt.Printf("%v %T\n", data["External"], data["External"])
-	} else {
-		folder := new(Folder)
-		folder.name = name
-		folder.id = data["ID"]
-		folder.external = data["External"] != "0"
-		ibd.folders = append(ibd.folders, *folder)
-	}
 }
 
 func isIBName(s string) bool {
